@@ -96,9 +96,9 @@ console.log(getLocalDate(new Date(1999999123456), true, true) === '2033-05-18, 0
  * Создайте функцию getWeekDay(date), которая принимает дату в виде строки в формате 'yyyy-mm-dd'
  * и выводит текущий день недели: "понедельник", "вторник", … "воскресенье".
  */
-var getWeekDay = (date) => {
-  var myDate = new Date(date);
-  var day = [
+var getWeekDay = (d) => {
+  var myDate = new Date(d);
+  var days = [
     'воскресенье',
     'понедельник',
     'вторник',
@@ -107,7 +107,7 @@ var getWeekDay = (date) => {
     'пятница',
     'суббота',
   ];
-  return day[myDate.getDay()];
+  return days[myDate.getDay()];
 };
 console.log(getWeekDay('2019-01-30')); // среда
 console.log(getWeekDay('2019-07-16')); // вторник
@@ -137,7 +137,7 @@ console.log(getLocalDay('2019-07-27')); // 6
  * Дата принимается в формате YYYY-MM-DD, возвращается DD.MM.YYYY.
  */
 var getDateAgo = (d, days) => {
-  var date = new Date(date);
+  var date = new Date(d);
   date.setDate(date.getDate() - days);
   return date.toLocaleString('uk-UA').replace(/(\d.*),\s+(\d.*)/gu, '$1');
   };
@@ -158,17 +158,42 @@ console.log(getDateAgo('2019-01-29', 365)); // 29.01.2018
  * Способ создания прототипа – только функция-конструктор!
  * Объекты и их методы, созданные прототипом должны полностью соответствовать объектам из прошлого задания.
  */
+var Car = function (engine, model, name, year) {
+  this.engine = engine;
+  this.model = model;
+  this.name = name;
+  this.year = year;
+};
 
-// let car = new Car(2000, 'Lacetti', 'Chevrolet', 2010);
-// let car2 = new Car(5000, 'FX50 AWD', 'Infinite', 2019);
-// console.log(car.info()); // chevrolet Lacetti, 2010cc, year 2010, used
-// car.used = 'new';
-// console.log(car.info()); // chevrolet Lacetti, 2019cc, year 2019, new -- год изменен
-// car.used = 'used';
-// console.log(car.info()); // chevrolet Lacetti, 2019cc, year 2019, new -- изменения не выполняются
-// console.log(car2.info()); // infinite FX50 AWD, 2019cc, year 2019, new
-// car.used = 'used';
-// console.log(car2.info()); // infinite FX50 AWD, 2019cc, year 2019, new -- изменения не выполняются
+Object.defineProperties(Car.prototype, {
+  used: {
+    get() {
+      const yearNow = new Date().getFullYear();
+
+      return yearNow - this.year > 1 ? 'used' : 'new';
+    },
+    set(value) {
+      const yearNow = new Date().getFullYear();
+
+      if (value === 'new' && this.year < yearNow) this.year = yearNow;
+    }
+  }
+});
+
+Car.prototype.info = function () {
+  return `${this.name} ${this.model}, ${this.engine}cc, year ${this.year}, ${this.used}`;
+};
+
+let car = new Car(2000, 'Lacetti', 'Chevrolet', 2010);
+let car2 = new Car(5000, 'FX50 AWD', 'Infinite', 2019);
+console.log(car.info()); // chevrolet Lacetti, 2010cc, year 2010, used
+car.used = 'new';
+console.log(car.info()); // chevrolet Lacetti, 2019cc, year 2019, new -- год изменен
+car.used = 'used';
+console.log(car.info()); // chevrolet Lacetti, 2019cc, year 2019, new -- изменения не выполняются
+console.log(car2.info()); // infinite FX50 AWD, 2019cc, year 2019, new
+car.used = 'used';
+console.log(car2.info()); // infinite FX50 AWD, 2019cc, year 2019, new -- изменения не выполняются
 
 /*
  * #7
@@ -178,24 +203,28 @@ console.log(getDateAgo('2019-01-29', 365)); // 29.01.2018
  *
  * Если в качестве параметра передается что-либо кроме функции, тестирование не выполняется, возвращается 0.
  */
+var testPerformance = (iterations, func) => {
+  var time = Date.now();
+  if (typeof func === 'function') for (var i = iterations; i--;) func();
+  return Date.now() - time;
+};
+// данная функция необходима для корректного тестирования кода
+function test1() {
+  let str = myLongStr;
+  while (str.indexOf('o') !== -1) str = str.replace('o', '');
+  while (str.indexOf('a') !== -1) str = str.replace('a', '');
+  while (str.indexOf('e') !== -1) str = str.replace('e', '');
+  while (str.indexOf('u') !== -1) str = str.replace('u', '');
+  while (str.indexOf('i') !== -1) str = str.replace('i', '');
+}
 
 // данная функция необходима для корректного тестирования кода
-// function test1() {
-//   let str = myLongStr;
-//   while (str.indexOf('o') !== -1) str = str.replace('o', '');
-//   while (str.indexOf('a') !== -1) str = str.replace('a', '');
-//   while (str.indexOf('e') !== -1) str = str.replace('e', '');
-//   while (str.indexOf('u') !== -1) str = str.replace('u', '');
-//   while (str.indexOf('i') !== -1) str = str.replace('i', '');
-// }
+function test2() {
+  const reg = new RegExp('[oaeui]', 'gui');
 
-// данная функция необходима для корректного тестирования кода
-// function test2() {
-//   const reg = new RegExp('[oaeui]', 'gui');
+  myLongStr.replace(reg, '');
+}
 
-//   myLongStr.replace(reg, '');
-// }
-
-// console.log(testPerformance(100, test1)); // time
-// console.log(testPerformance(100, test2)); // time
-// console.log(testPerformance(100, 12345)); // 0
+console.log(testPerformance(100, test1)); // time
+console.log(testPerformance(100, test2)); // time
+console.log(testPerformance(100, 12345)); // 0
